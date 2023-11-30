@@ -13,11 +13,11 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
 /// @notice Extends ERC721 with additional features like enumeration, URI storage, burnability, access control, and voting.
 /// @dev Utilizes OpenZeppelin contracts for standardized, secure implementation of ERC721 functionality.
 /// @custom:security-contact dennison@tally.xyz
-contract ERC721Token is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl, EIP712, ERC721Votes {
+contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl, EIP712, ERC721Votes {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint256 private _nextTokenId;
 
-    string private _baseURI;
+    string public baseURI;
     event BaseURIChanged(string newBaseURI);
 
     /// @notice Initializes the contract with given parameters.
@@ -32,22 +32,22 @@ contract ERC721Token is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnab
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
 
-        _baseURI = baseURI_;
-        emit BaseURIChanged(_baseURI);
+        baseURI = baseURI_;
+        emit BaseURIChanged(baseURI);
     }
 
     /// @dev Internal function to return the base URI for token metadata.
     /// @return The base URI.
     function _baseURI() internal view override returns (string memory) {
-        return _baseURI;
+        return baseURI;
     }
 
     /// @notice Sets a new base URI for token metadata.
     /// @dev Restricted to accounts with the default admin role.
     /// @param newBaseURI The new base URI to set.
     function setBaseURI(string memory newBaseURI) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        _baseURI = newBaseURI;
-        emit BaseURIChanged(_baseURI);
+        baseURI = newBaseURI;
+        emit BaseURIChanged(baseURI);
     }
 
     /// @notice Mints a new token with a specified URI to a given address.

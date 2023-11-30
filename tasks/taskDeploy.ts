@@ -17,7 +17,7 @@ task("task:deployNFTToken")
   .addParam("baseURI", "Base URI")
   .setAction(async function (taskArguments: TaskArguments, { ethers }) {
     const signers = await ethers.getSigners();
-    const tokenFactory = await ethers.getContractFactory("ERC721Token");
+    const tokenFactory = await ethers.getContractFactory("DAOToken");
     const { baseURI, name, symbol } = taskArguments;
     const token = await tokenFactory.connect(signers[0]).deploy(baseURI, name, symbol);
     await token.waitForDeployment();
@@ -34,7 +34,7 @@ task("task:deployNFTGovernor")
   .addParam("percentageQuorum", "Percentage Quorum")
   .setAction(async function (taskArguments: TaskArguments, { ethers }) {
     const signers = await ethers.getSigners();
-    const governorFactory = await ethers.getContractFactory("Governor");
+    const governorFactory = await ethers.getContractFactory("DAOGovernor");
     const { tokenAddress, timelockAddress, governorName, votingPeriod, votingDelay, proposalThreshold, percentageQuorum } = taskArguments;
 
     const governor = await governorFactory.connect(signers[0]).deploy(tokenAddress, timelockAddress, governorName, votingPeriod, votingDelay, proposalThreshold, percentageQuorum);
@@ -73,8 +73,8 @@ task("task:deployNFTDAO")
   .setAction(async function (taskArguments: TaskArguments, { ethers }) {
     const signers = await ethers.getSigners();
 
-    const tokenFactory = await ethers.getContractFactory("ERC721Token");
-    const governorFactory = await ethers.getContractFactory("Governor");
+    const tokenFactory = await ethers.getContractFactory("DAOToken");
+    const governorFactory = await ethers.getContractFactory("DAOGovernor");
     const timelockFactory = await ethers.getContractFactory("Timelock");
 
     const { name,

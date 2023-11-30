@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.so
 /// @notice Implements voting governance with timelock control.
 /// @dev Extends OpenZeppelin's Governor and various related contracts.
 /// @custom:security-contact dennison@tally.xyz
-contract MyGovernor is
+contract DAOGovernor is
     Governor,
     GovernorSettings,
     GovernorCountingSimple,
@@ -22,30 +22,27 @@ contract MyGovernor is
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
-    mapping(uint256 => address) public proposalProposer;
 
-    error OnlyProposerCanCancel();
-    error OnlyPendingProposalsCanBeCancelled();
 
     /// @notice Initializes the governance contract.
     /// @param _token The token used for voting.
     /// @param _timelock The timelock controller for executing proposals.
     /// @param name The name of the governance system.
-    /// @param votingPeriod The period in which voting is allowed.
-    /// @param votingDelay The delay before voting on a proposal begins.
-    /// @param proposalThreshold The minimum number of votes required to submit a proposal.
+    /// @param _votingPeriod The period in which voting is allowed.
+    /// @param _votingDelay The delay before voting on a proposal begins.
+    /// @param _proposalThreshold The minimum number of votes required to submit a proposal.
     /// @param percentQuorum The percentage of votes required for quorum.
     constructor(
         IVotes _token,
         TimelockController _timelock,
         string memory name,
-        uint256 votingPeriod,
-        uint256 votingDelay,
-        uint256 proposalThreshold,
+        uint32 _votingPeriod,
+        uint48 _votingDelay,
+        uint48 _proposalThreshold,
         uint256 percentQuorum
     )
         Governor(name)
-        GovernorSettings(votingDelay, votingPeriod, proposalThreshold)
+        GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(percentQuorum)
         GovernorTimelockControl(_timelock)
@@ -111,8 +108,6 @@ contract MyGovernor is
         string memory description,
         address proposer
     ) internal override(Governor, GovernorStorage) returns (uint256) {
-        uint256 proposalId = hashProposal(targets, values, calldatas, keccak256(bytes(description)));
-        proposalProposer[proposalId] = proposer;
         return super._propose(targets, values, calldatas, description, proposer);
     }
 
@@ -167,19 +162,6 @@ contract MyGovernor is
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
-    /// @notice Allows a proposer to cancel their proposal.
-    /// @dev Can only be called by the proposer and only for pending proposals.
-    /// @param proposalId The ID of the proposal to cancel.
-    function cancel(uint256 proposalId) public override(Governor, GovernorTimelockControl) {
-        require(state(proposalId) == ProposalState.Pending, OnlyPendingProposalsCanBeCancelled());
-        require(proposalProposer[proposalId] == msg.sender, OnlyProposerCanCancel());
-        _cancel(
-            proposalDetails(proposalId).targets,
-            proposalDetails(proposalId).values,
-            proposalDetails(proposalId).calldatas,
-            proposalDetails(proposalId).descriptionHash
-        );
-    }
 
     /// @notice Returns the executor of the timelock.
     /// @dev Overrides Governor and GovernorTimelockControl.

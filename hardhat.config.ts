@@ -1,5 +1,6 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
+import "@nomicfoundation/hardhat-ledger";
 import type { HardhatUserConfig } from "hardhat/config";
 import { vars } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
@@ -102,7 +103,7 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20",
     settings: {
       metadata: {
         // Not including the metadata hash
