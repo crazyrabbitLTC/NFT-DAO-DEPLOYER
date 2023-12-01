@@ -28,7 +28,7 @@ async function main() {
   const DAOGovernorFactory = await ethers.getContractFactory("DAOGovernor");
   const daoGovernor = await DAOGovernorFactory.deploy(
     await daoToken.getAddress(),
-   await timelock.getAddress(),
+    await timelock.getAddress(),
     config.governorName,
     config.votingPeriod,
     config.votingDelay,
@@ -39,30 +39,51 @@ async function main() {
   console.log("DAOGovernor deployed to:", await daoGovernor.getAddress());
 
   // Mint tokens and set up roles
+  console.log("Minting tokens to recipients...");
   for (const recipient of config.tokenRecipients) {
     await daoToken.safeMint(recipient, `tokenURI${config.tokenRecipients.indexOf(recipient)}`);
+    console.log(`Token minted to ${recipient}`);
   }
-  console.log("Tokens minted to recipients");
 
   const MINTER_ROLE = await daoToken.MINTER_ROLE();
   const DEFAULT_ADMIN_ROLE = await daoToken.DEFAULT_ADMIN_ROLE();
+
+  console.log("Assigning Minter and Default Admin roles to DAOGovernor...");
   await daoToken.grantRole(MINTER_ROLE, await daoGovernor.getAddress());
+  console.log("Minter role granted to DAOGovernor.");
+
   await daoToken.grantRole(DEFAULT_ADMIN_ROLE, await daoGovernor.getAddress());
+  console.log("Default Admin role granted to DAOGovernor.");
+
+  console.log("Renouncing Minter and Default Admin roles from deployer...");
   await daoToken.renounceRole(MINTER_ROLE, await deployer.getAddress());
+  console.log("Minter role renounced by deployer.");
+
   await daoToken.renounceRole(DEFAULT_ADMIN_ROLE, await deployer.getAddress());
+  console.log("Default Admin role renounced by deployer.");
 
   const PROPOSER_ROLE = await timelock.PROPOSER_ROLE();
   const EXECUTOR_ROLE = await timelock.EXECUTOR_ROLE();
   const CANCELLER_ROLE = await timelock.CANCELLER_ROLE();
-  await timelock.grantRole(PROPOSER_ROLE, await daoGovernor.getAddress());
-  await timelock.grantRole(EXECUTOR_ROLE, await daoGovernor.getAddress());
-  await timelock.grantRole(CANCELLER_ROLE, await daoGovernor.getAddress());
-  await timelock.renounceRole(DEFAULT_ADMIN_ROLE, deployer.address);
 
-  console.log("DAO setup complete");
+  console.log("Assigning Proposer, Executor, and Canceler roles to DAOGovernor in TimelockController...");
+  await timelock.grantRole(PROPOSER_ROLE, await daoGovernor.getAddress());
+  console.log("Proposer role granted to DAOGovernor.");
+
+  await timelock.grantRole(EXECUTOR_ROLE, await daoGovernor.getAddress());
+  console.log("Executor role granted to DAOGovernor.");
+
+  await timelock.grantRole(CANCELLER_ROLE, await daoGovernor.getAddress());
+  console.log("Canceler role granted to DAOGovernor.");
+
+  console.log("Renouncing Default Admin role from deployer in TimelockController...");
+  await timelock.renounceRole(DEFAULT_ADMIN_ROLE, deployer.address);
+  console.log("Default Admin role renounced by deployer in TimelockController.");
+
+  console.log("DAO setup complete.");
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error("Deployment error:", error);
   process.exitCode = 1;
 });
