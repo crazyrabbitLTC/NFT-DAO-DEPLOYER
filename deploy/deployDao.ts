@@ -48,12 +48,12 @@ async function main() {
   const MINTER_ROLE = await daoToken.MINTER_ROLE();
   const DEFAULT_ADMIN_ROLE = await daoToken.DEFAULT_ADMIN_ROLE();
 
-  console.log("Assigning Minter and Default Admin roles to DAOGovernor...");
-  await daoToken.grantRole(MINTER_ROLE, await daoGovernor.getAddress());
-  console.log("Minter role granted to DAOGovernor.");
+  console.log("Assigning Minter and Default Admin roles to Timelock...");
+  await daoToken.grantRole(MINTER_ROLE, await timelock.getAddress());
+  console.log("Minter role granted to timelock.");
 
-  await daoToken.grantRole(DEFAULT_ADMIN_ROLE, await daoGovernor.getAddress());
-  console.log("Default Admin role granted to DAOGovernor.");
+  await daoToken.grantRole(DEFAULT_ADMIN_ROLE, await timelock.getAddress());
+  console.log("Default Admin role granted to timelock.");
 
   console.log("Renouncing Minter and Default Admin roles from deployer...");
   await daoToken.renounceRole(MINTER_ROLE, await deployer.getAddress());

@@ -1,14 +1,14 @@
 // scripts/daoConfig.ts
 
 export const config = {
-  tokenName: "MyNFT",
-  tokenSymbol: "MNFT",
-  baseURI: "https://my-nft-uri.com/",
-  governorName: "MyDAOGovernor",
-  votingPeriod: 5760,
-  votingDelay: 576,
-  proposalThreshold: 1,
-  percentageQuorum: 4,
+  tokenName: "Content Guild Arbitrum",
+  tokenSymbol: "CGA",
+  baseURI: "ipfs://bafkreiaupnbsg56ayyzfzrkxu363c45eyfmzghjfesdk4alhn44fixw7wm",
+  governorName: "Content Guild Arbitrum",
+  votingPeriod: 30, //30 minutes for initial testing
+  votingDelay: 0,
+  proposalThreshold: 0, // anyone can propose, for initial testing
+  percentageQuorum: 10,
   minDelay: 3600,
   proposers: [], // Add proposer addresses
   executors: [], // Add executor addresses

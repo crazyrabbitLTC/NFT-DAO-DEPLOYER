@@ -20,6 +20,14 @@ contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable,
     string public baseURI;
     event BaseURIChanged(string newBaseURI);
 
+    bool public individualURI = false;
+    bool public isTokenTransferable = false;
+
+    error TokenIsNonTransferable();
+
+    event IsIndividualURIEnabled(bool individualURI);
+    event IsTokenTransferable(bool isTokenTransferable);
+
     /// @notice Initializes the contract with given parameters.
     /// @param baseURI_ The initial base URI for token metadata.
     /// @param name The name of the token.
@@ -34,6 +42,8 @@ contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable,
 
         baseURI = baseURI_;
         emit BaseURIChanged(baseURI);
+        emit IsIndividualURIEnabled(individualURI);
+        emit IsTokenTransferable(isTokenTransferable);
     }
 
     /// @dev Internal function to return the base URI for token metadata.
@@ -50,6 +60,16 @@ contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable,
         emit BaseURIChanged(baseURI);
     }
 
+    function toggleTokenTransferability() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        isTokenTransferable = !isTokenTransferable;
+        emit IsTokenTransferable(isTokenTransferable);
+    }
+
+    function toggleIndividualURI() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        individualURI = !individualURI;
+        emit IsIndividualURIEnabled(individualURI);
+    }
+
     /// @notice Mints a new token with a specified URI to a given address.
     /// @dev Restricted to accounts with the minter role.
     /// @param to The address to mint the token to.
@@ -59,8 +79,6 @@ contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable,
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
     }
-
-    // The following functions are overrides required by Solidity.
 
     /// @dev Internal function to update delegatee for a token.
     /// @param to The address to delegate to.
@@ -72,6 +90,10 @@ contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable,
         uint256 tokenId,
         address auth
     ) internal override(ERC721, ERC721Enumerable, ERC721Votes) returns (address) {
+        // Check if the token is being transferred (not minted) and isTokenTransferable is false
+        if (!isTokenTransferable && _ownerOf(tokenId) != address(0)) {
+            revert TokenIsNonTransferable();
+        }
         return super._update(to, tokenId, auth);
     }
 
@@ -87,7 +109,11 @@ contract DAOToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable,
     /// @param tokenId The token ID.
     /// @return The URI of the given token ID.
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
+        if (individualURI) {
+            return super.tokenURI(tokenId);
+        }
+
+        return baseURI;
     }
 
     /// @notice Checks if the contract supports an interface.
