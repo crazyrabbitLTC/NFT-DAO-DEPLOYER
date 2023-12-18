@@ -10,7 +10,7 @@ import type { DAOToken } from "../../types";
 import type { TimelockController } from "@openzeppelin/contracts/governance/TimelockController";
 
 
-describe.only("DAOGovernor Contract", function () {
+describe("DAOGovernor Contract", function () {
 
   async function deployGovernanceFixture() {
     let admin: SignerWithAddress, voter1: SignerWithAddress, voter2: SignerWithAddress;
@@ -81,7 +81,7 @@ describe.only("DAOGovernor Contract", function () {
     const calldatas: string[] = ["0x"]; // Array of calldatas for the proposal calls
     const description = "Test Proposal"; // Description of the proposal
 
-    it.only("should create a proposal with correct parameters", async function () {
+    it("should create a proposal with correct parameters", async function () {
       const { daoGovernor, admin } = await loadFixture(deployGovernanceFixture);
 
       proposalId = await daoGovernor.hashProposal(targets, values, calldatas, ethers.keccak256(ethers.toUtf8Bytes(description)));
@@ -100,7 +100,7 @@ describe.only("DAOGovernor Contract", function () {
 
   describe("Full Proposal Cycle", function () {
 
-    it.only("should complete a full proposal cycle to make DAOToken transferable", async function () {
+    it("should complete a full proposal cycle to make DAOToken transferable", async function () {
       const { daoGovernor, timelock, daoToken, admin, voter1, voter2 } = await loadFixture(deployGovernanceFixture);
       const proposalDescription = "Test Proposal"; // Description of the proposal
 
